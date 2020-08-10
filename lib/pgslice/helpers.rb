@@ -3,6 +3,7 @@ module PgSlice
     SQL_FORMAT = {
       day: "YYYYMMDD",
       month: "YYYYMM",
+      quarter: "YYYYMM",
       year: "YYYY"
     }
 
@@ -16,6 +17,10 @@ module PgSlice
 
     def log_sql(message = nil)
       say message
+    end
+
+    def log_time
+      say "## Time check: #{Time.now.strftime('%F %T')}"
     end
 
     def abort(message)
@@ -107,6 +112,8 @@ module PgSlice
         "%Y%m%d"
       when :month
         "%Y%m"
+      when :quarter
+        "%Y%m"
       else
         "%Y"
       end
@@ -123,8 +130,26 @@ module PgSlice
         date
       when :month
         Date.new(date.year, date.month)
+      when :quarter
+        quarter = (date.month / 3.0).ceil
+        Date.new(date.year, quarter_month(quarter))
       else
         Date.new(date.year)
+      end
+    end
+
+    def quarter_month(quarter)
+      case quarter
+      when 1
+        1
+      when 2
+        4
+      when 3
+        7
+      when 4
+        10
+      else
+        abort 'Illegal quarter designation'
       end
     end
 
@@ -143,6 +168,11 @@ module PgSlice
         date.next_day(count)
       when :month
         date.next_month(count)
+      when :quarter
+        # NB - dondeng - unforunatley, it looks like Date does not have a
+        # next_quarter method that takes in an integer for a count
+        return date.next_month(count * 3) if count >= 0
+        return date.prev_month(count * -3) if count < 0
       else
         date.next_year(count)
       end

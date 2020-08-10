@@ -82,6 +82,7 @@ module PgSlice
           where << " AND #{options[:where]}"
         end
 
+        log_time
         query = <<-SQL
 /* #{i} of #{batch_count} */
 INSERT INTO #{quote_table(dest_table)} (#{fields})
@@ -90,6 +91,7 @@ INSERT INTO #{quote_table(dest_table)} (#{fields})
         SQL
 
         run_query(query)
+        log_time
 
         starting_id += batch_size
         i += 1

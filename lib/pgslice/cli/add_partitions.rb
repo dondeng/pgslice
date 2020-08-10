@@ -54,11 +54,9 @@ module PgSlice
       added_partitions = []
       range.each do |n|
         day = advance_date(today, period, n)
-
         partition = Table.new(original_table.schema, "#{original_table.name}_#{day.strftime(name_format(period))}")
         next if partition.exists?
         added_partitions << partition
-
         if declarative
           queries << <<-SQL
 CREATE TABLE #{quote_table(partition)} PARTITION OF #{quote_table(table)} FOR VALUES FROM (#{sql_date(day, cast, false)}) TO (#{sql_date(advance_date(day, period, 1), cast, false)});
